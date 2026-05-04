@@ -1,0 +1,95 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the bug.
+      placeholder: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & Version
+      description: Which browser are you using?
+      placeholder: "e.g. Chrome 125, Firefox 128, Safari 17.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      description: What type of device are you using?
+      options:
+        - Desktop
+        - Mobile
+        - Tablet
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Which OS are you using?
+      placeholder: "e.g. Windows 11, macOS 14.5, Ubuntu 24.04, iOS 17.5, Android 14"
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: If applicable, add a screenshot to help explain the problem.
+      placeholder: Drag and drop an image here
+    validations:
+      required: false
+
+  - type: dropdown
+    id: mobile
+    attributes:
+      label: Is this a mobile issue?
+      description: Does this bug only occur on mobile devices?
+      options:
+        - "Yes"
+        - "No"
+        - "Both"
+    validations:
+      required: true

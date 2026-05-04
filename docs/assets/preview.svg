@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#334155"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2dd4bf"/>
+      <stop offset="100%" style="stop-color:#14b8a6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bgGrad)"/>
+
+  <!-- Decorative grid pattern -->
+  <g opacity="0.1">
+    <line x1="0" y1="112" x2="800" y2="112" stroke="#64748b" stroke-width="1"/>
+    <line x1="0" y1="225" x2="800" y2="225" stroke="#64748b" stroke-width="1"/>
+    <line x1="0" y1="337" x2="800" y2="337" stroke="#64748b" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="450" stroke="#64748b" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="450" stroke="#64748b" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="450" stroke="#64748b" stroke-width="1"/>
+  </g>
+
+  <!-- Logo / Icon area -->
+  <rect x="40" y="30" width="80" height="80" rx="16" fill="#134e4a"/>
+  <g transform="translate(60, 50)">
+    <rect x="0" y="0" width="20" height="20" rx="4" fill="#2dd4bf"/>
+    <rect x="25" y="0" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.8"/>
+    <rect x="0" y="25" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.8"/>
+    <rect x="25" y="25" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.6"/>
+  </g>
+
+  <!-- Title -->
+  <text x="140" y="75" font-family="system-ui, sans-serif" font-size="28" font-weight="bold" fill="#f1f5f9">Open Tools Starter</text>
+  <text x="140" y="100" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">v0.2.3 • Local First • No Backend • GitHub Pages Ready</text>
+
+  <!-- Hero Card -->
+  <rect x="40" y="140" width="340" height="180" rx="12" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+
+  <!-- Level badges -->
+  <g transform="translate(60, 160)">
+    <rect x="0" y="0" width="50" height="24" rx="12" fill="#0d9488"/>
+    <text x="25" y="16" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle">C</text>
+    <rect x="60" y="0" width="50" height="24" rx="12" fill="#d97706"/>
+    <text x="85" y="16" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle">B</text>
+    <rect x="120" y="0" width="50" height="24" rx="12" fill="#2563eb"/>
+    <text x="145" y="16" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="white" text-anchor="middle">A</text>
+  </g>
+
+  <!-- Card content -->
+  <text x="60" y="210" font-family="system-ui, sans-serif" font-size="16" font-weight="bold" fill="#f1f5f9">Project Level System</text>
+  <text x="60" y="235" font-family="system-ui, sans-serif" font-size="13" fill="#94a3b8">Use等级控制复杂度，从轻量C级工具扩展到A级旗舰工具箱</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(60, 260)">
+    <rect x="0" y="0" width="90" height="22" rx="11" fill="#134e4a"/>
+    <text x="45" y="14" font-family="system-ui, sans-serif" font-size="10" fill="#2dd4bf" text-anchor="middle">Local First</text>
+    <rect x="100" y="0" width="90" height="22" rx="11" fill="#134e4a"/>
+    <text x="145" y="14" font-family="system-ui, sans-serif" font-size="10" fill="#2dd4bf" text-anchor="middle">No Backend</text>
+    <rect x="200" y="0" width="90" height="22" rx="11" fill="#134e4a"/>
+    <text x="245" y="14" font-family="system-ui, sans-serif" font-size="10" fill="#2dd4bf" text-anchor="middle">PWA Ready</text>
+  </g>
+
+  <!-- Capability Cards -->
+  <rect x="400" y="140" width="160" height="80" rx="10" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+  <text x="420" y="170" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f1f5f9">self-test</text>
+  <text x="420" y="195" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">命令行自测 + 浏览器自测</text>
+
+  <rect x="570" y="140" width="160" height="80" rx="10" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+  <text x="590" y="170" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f1f5f9">preflight</text>
+  <text x="590" y="195" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">发布前检查 - LICENSE/版本/配置</text>
+
+  <rect x="400" y="230" width="160" height="80" rx="10" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+  <text x="420" y="260" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f1f5f9">GitHub Actions</text>
+  <text x="420" y="285" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">自动构建部署到 GitHub Pages</text>
+
+  <rect x="570" y="230" width="160" height="80" rx="10" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+  <text x="590" y="260" font-family="system-ui, sans-serif" font-size="14" font-weight="bold" fill="#f1f5f9">Module Registry</text>
+  <text x="590" y="285" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">模块化设计 - 必须/推荐/可选</text>
+
+  <!-- Bottom footer -->
+  <rect x="40" y="350" width="720" height="60" rx="10" fill="url(#cardGrad)" stroke="#475569" stroke-width="1"/>
+
+  <!-- Tech stack badges -->
+  <g transform="translate(60, 370)">
+    <rect x="0" y="0" width="60" height="24" rx="4" fill="#0ea5e9"/>
+    <text x="30" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">Vite</text>
+    <rect x="70" y="0" width="60" height="24" rx="4" fill="#61dafb"/>
+    <text x="100" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">React</text>
+    <rect x="140" y="0" width="80" height="24" rx="4" fill="#3178c6"/>
+    <text x="180" y="16" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">TypeScript</text>
+  </g>
+
+  <!-- Version & License -->
+  <text x="450" y="385" font-family="system-ui, sans-serif" font-size="12" fill="#64748b">MIT License • Quality Fix v0.2.3</text>
+
+  <!-- Link indicator -->
+  <g transform="translate(580, 365)">
+    <circle cx="10" cy="10" r="8" fill="#2dd4bf"/>
+    <path d="M7 10 L9 10 M8 7 L8 13" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <text x="600" y="385" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8">Deploy Ready</text>
+</svg>

@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Pain Point
+      description: What problem does this feature solve? What pain point are you experiencing?
+      placeholder: Describe the problem or limitation you're facing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use Case
+      description: Describe a specific scenario where this feature would be useful.
+      placeholder: "When I do X, I need Y so that Z..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How do you think this should work?
+      placeholder: Describe your ideal solution.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: localfirst
+    attributes:
+      label: Does this fit Local First / No Backend?
+      description: Open Tools Starter is a local-first, no-backend template. Does your feature align with this principle?
+      options:
+        - "Yes"
+        - "No"
+        - "Not Sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or references.
+      placeholder: Add any extra information here.
+    validations:
+      required: false

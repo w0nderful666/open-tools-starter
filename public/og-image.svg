@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2dd4bf"/>
+      <stop offset="100%" style="stop-color:#14b8a6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <g opacity="0.08">
+    <line x1="0" y1="157" x2="1200" y2="157" stroke="#64748b" stroke-width="2"/>
+    <line x1="0" y1="315" x2="1200" y2="315" stroke="#64748b" stroke-width="2"/>
+    <line x1="0" y1="473" x2="1200" y2="473" stroke="#64748b" stroke-width="2"/>
+    <line x1="300" y1="0" x2="300" y2="630" stroke="#64748b" stroke-width="2"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="#64748b" stroke-width="2"/>
+    <line x1="900" y1="0" x2="900" y2="630" stroke="#64748b" stroke-width="2"/>
+  </g>
+
+  <rect x="80" y="60" width="120" height="120" rx="20" fill="#134e4a"/>
+  <g transform="translate(110, 90)">
+    <rect x="0" y="0" width="30" height="30" rx="6" fill="#2dd4bf"/>
+    <rect x="38" y="0" width="30" height="30" rx="6" fill="#2dd4bf" opacity="0.8"/>
+    <rect x="0" y="38" width="30" height="30" rx="6" fill="#2dd4bf" opacity="0.8"/>
+    <rect x="38" y="38" width="30" height="30" rx="6" fill="#2dd4bf" opacity="0.6"/>
+  </g>
+
+  <text x="230" y="130" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="#f1f5f9">Open Tools Starter</text>
+  <text x="230" y="175" font-family="system-ui, sans-serif" font-size="22" fill="#94a3b8">v0.2.3 • Local First • No Backend • GitHub Pages Ready</text>
+
+  <g transform="translate(80, 240)">
+    <rect x="0" y="0" width="80" height="36" rx="18" fill="#0d9488"/>
+    <text x="40" y="24" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">C</text>
+    <rect x="100" y="0" width="80" height="36" rx="18" fill="#d97706"/>
+    <text x="140" y="24" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">B</text>
+    <rect x="200" y="0" width="80" height="36" rx="18" fill="#2563eb"/>
+    <text x="240" y="24" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>
+  </g>
+
+  <text x="80" y="350" font-family="system-ui, sans-serif" font-size="28" font-weight="bold" fill="#f1f5f9">Project Level System</text>
+  <text x="80" y="390" font-family="system-ui, sans-serif" font-size="20" fill="#94a3b8">用等级控制复杂度，从轻量C级工具扩展到A级旗舰工具箱</text>
+
+  <g transform="translate(80, 440)">
+    <rect x="0" y="0" width="140" height="32" rx="16" fill="#134e4a"/>
+    <text x="70" y="20" font-family="system-ui, sans-serif" font-size="14" fill="#2dd4bf" text-anchor="middle">Local First</text>
+    <rect x="160" y="0" width="140" height="32" rx="16" fill="#134e4a"/>
+    <text x="230" y="20" font-family="system-ui, sans-serif" font-size="14" fill="#2dd4bf" text-anchor="middle">No Backend</text>
+    <rect x="320" y="0" width="140" height="32" rx="16" fill="#134e4a"/>
+    <text x="390" y="20" font-family="system-ui, sans-serif" font-size="14" fill="#2dd4bf" text-anchor="middle">PWA Ready</text>
+  </g>
+
+  <g transform="translate(520, 280)">
+    <rect x="0" y="0" width="280" height="120" rx="12" fill="#334155" stroke="#475569"/>
+    <text x="20" y="35" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#f1f5f9">self-test</text>
+    <text x="20" y="65" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">命令行自测 + 浏览器自测</text>
+    <text x="20" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">test:static, test:config, test:docs...</text>
+  </g>
+
+  <g transform="translate="820, 280)">
+    <rect x="0" y="0" width="280" height="120" rx="12" fill="#334155" stroke="#475569"/>
+    <text x="20" y="35" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#f1f5f9">preflight</text>
+    <text x="20" y="65" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">发布前检查</text>
+    <text x="20" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">LICENSE/版本/配置/SEO/组件</text>
+  </g>
+
+  <g transform="translate(520, 420)">
+    <rect x="0" y="0" width="280" height="120" rx="12" fill="#334155" stroke="#475569"/>
+    <text x="20" y="35" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#f1f5f9">Module Registry</text>
+    <text x="20" y="65" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">模块化设计</text>
+    <text x="20" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">必须/推荐/可选/不建议</text>
+  </g>
+
+  <g transform="translate="820, 420)">
+    <rect x="0" y="0" width="280" height="120" rx="12" fill="#334155" stroke="#475569"/>
+    <text x="20" y="35" font-family="system-ui, sans-serif" font-size="22" font-weight="bold" fill="#f1f5f9">GitHub Actions</text>
+    <text x="20" y="65" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">自动构建部署</text>
+    <text x="20" y="90" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">push to main → Deploy to Pages</text>
+  </g>
+
+  <g transform="translate("80, 550)">
+    <rect x="0" y="0" width="100" height="40" rx="6" fill="#0ea5e9"/>
+    <text x="50" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">Vite</text>
+    <rect x="120" y="0" width="100" height="40" rx="6" fill="#61dafb"/>
+    <text x="170" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="#0f172a" text-anchor="middle">React</text>
+    <rect x="240" y="0" width="140" height="40" rx="6" fill="#3178c6"/>
+    <text x="310" y="26" font-family="system-ui, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">TypeScript</text>
+  </g>
+
+  <text x="460" y="580" font-family="system-ui, sans-serif" font-size="20" fill="#64748b">MIT License • Quality Fix v0.2.3</text>
+</svg>
