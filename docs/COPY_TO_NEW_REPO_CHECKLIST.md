@@ -103,6 +103,22 @@ When copying open-tools-starter to create a new project, follow this checklist.
 - [ ] Verify manifest JSON in `useMemo` reads project info from `siteMeta`
 - [ ] Update any remaining visible references to open-tools-starter that are specific to the old project
 
+### Open Source Maintainer Files
+
+These files are included in the template. Review and customize for your new project:
+
+| File | Action |
+|------|--------|
+| `CONTRIBUTING.md` | Update project-specific contribution guidelines |
+| `SECURITY.md` | Update contact info for security reports |
+| `.github/ISSUE_TEMPLATE/bug_report.yml` | Customize if needed |
+| `.github/ISSUE_TEMPLATE/feature_request.yml` | Customize if needed |
+| `.github/ISSUE_TEMPLATE/docs_improvement.yml` | Customize if needed |
+| `.github/pull_request_template.md` | Customize checklist if needed |
+| `docs/GITHUB_REPO_SETUP.md` | Follow this guide after creating repo |
+| `docs/RELEASE_TEMPLATE.md` | Use when creating GitHub Releases |
+| `scripts/check-release-ready.mjs` | Run `npm run release:check` before release |
+
 ## Files You Can Remove
 
 Depending on chosen C/B/A level:

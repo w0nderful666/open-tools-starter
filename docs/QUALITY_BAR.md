@@ -64,6 +64,19 @@
 | 27 | scaffold 测试通过 | `npm run test:scaffold` 无 FAIL |
 | 28 | 无 Text Cleaner / Example Module | 首页和源码中无回归内容 |
 
+## v0.6.0 开源维护者检查
+
+| # | 检查项 | 说明 |
+|---|--------|------|
+| 29 | CONTRIBUTING.md 存在且内容完整 | 包含 Bug 报告、功能建议、PR 流程、开发环境 |
+| 30 | SECURITY.md 存在且内容完整 | 明确纯前端、本地优先、不上传文件、不收集隐私 |
+| 31 | Issue Templates 存在 | bug_report.yml、feature_request.yml、docs_improvement.yml |
+| 32 | PR Template 存在 | 包含变更类型、测试命令、隐私边界确认 |
+| 33 | docs/GITHUB_REPO_SETUP.md 存在 | 从模板创建新项目后的仓库设置手册 |
+| 34 | docs/RELEASE_TEMPLATE.md 存在 | 标准 GitHub Release 文案结构 |
+| 35 | release:check 通过 | npm run release:check 无 FAIL |
+| 36 | Starter Wizard 12 项输出完整 | 原 6 项 + 新增 6 项开源维护输出物均可复制下载 |
+
 ---
 
 ## 使用方法

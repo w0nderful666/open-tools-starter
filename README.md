@@ -196,6 +196,9 @@ npm run dev
 # 发布前检查
 npm run preflight
 
+# 发布就绪检查（开源维护文件和版本一致性）
+npm run release:check
+
 # 完整测试
 npm run test:all
 
@@ -217,6 +220,7 @@ npm run test:ci
 | `npm run test:dist` | 构建产物检查 |
 | `npm run test:scaffold` | create-project 脚手架检查 |
 | `npm run test:template-lock` | 模板锁定检查（防回归） |
+| `npm run release:check` | 发布就绪检查，验证开源维护文件和版本一致性 |
 | `npm run test:pressure` | 压力测试（可自定义轮数） |
 | `npm run test:all` | 完整测试 |
 | `npm run test:ci` | CI 模拟（含 2 轮压力测试） |
@@ -240,6 +244,21 @@ workflow 位于 `.github/workflows/pages.yml`，执行步骤：
 
 任何一步失败都会阻止部署。
 
+## Starter 资源文件
+
+本模板包含以下标准资源文件，可直接复用或按需定制：
+
+- `README.md` — 项目说明
+- `RELEASE_NOTES.md` — 版本发布记录
+- `CONTRIBUTING.md` — 贡献指南（Bug 报告、功能建议、PR 流程）
+- `SECURITY.md` — 安全政策（纯前端、本地优先、不上传文件）
+- `docs/GITHUB_REPO_SETUP.md` — 新项目仓库设置手册
+- `docs/RELEASE_TEMPLATE.md` — GitHub Release 文案模板
+- `docs/QUALITY_BAR.md` — 质量检查清单
+- `docs/NEW_PROJECT_PLAYBOOK.md` — 新项目启动手册
+- `docs/PROJECT_LEVELS.md` — 项目等级定义
+- `docs/MODULE_MATRIX.md` — 模块矩阵
+
 ## 隐私原则
 
 Open Tools Starter 默认遵守：
@@ -251,6 +270,19 @@ Open Tools Starter 默认遵守：
 - **GitHub Pages Ready** — 纯静态部署，无需服务器
 
 本模板不包含后端、数据库、登录系统或外部追踪脚本。
+
+## 开源维护者标准层
+
+v0.6.0 新增开源维护者标准层，补齐专业开源作者模板所需的维护和发布规范：
+
+- **CONTRIBUTING.md** — 贡献指南，包含 Bug 报告、功能建议、PR 流程
+- **SECURITY.md** — 安全政策，明确纯前端、本地优先、不上传文件
+- **Issue Templates** — 结构化 GitHub Issue 表单（Bug Report / Feature Request / Docs Improvement）
+- **PR Template** — PR 检查清单，包含变更类型、测试命令、隐私边界确认
+- **GitHub Repo Setup Guide** — 从模板创建新项目后的仓库设置手册
+- **Release Template** — 标准 GitHub Release 文案结构
+- **Release Readiness Check** — `npm run release:check` 自动检查发布就绪状态
+- **Starter Wizard 扩展** — 新增 6 个开源维护输出物（仓库设置、Release 草案、Roadmap Issues、截图指南、SECURITY 摘要、CONTRIBUTING 摘要）
 
 ## 发布前检查清单
 

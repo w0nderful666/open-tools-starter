@@ -435,3 +435,23 @@ README 必须清楚说明：
 
 请先给计划，再等确认后再实现。
 ```
+
+---
+
+## 11. 开源维护文件检查
+
+```text
+请检查当前项目的开源维护文件是否完整。
+
+检查内容：
+- CONTRIBUTING.md 是否存在且内容完整
+- SECURITY.md 是否存在且内容完整
+- .github/ISSUE_TEMPLATE/ 下是否有 bug_report.yml、feature_request.yml、docs_improvement.yml
+- .github/pull_request_template.md 是否存在
+- docs/GITHUB_REPO_SETUP.md 是否存在
+- docs/RELEASE_TEMPLATE.md 是否存在
+- Starter Wizard 是否能生成 12 项输出物
+- npm run release:check 是否通过
+
+请先输出问题清单，再修复缺失项。
+```

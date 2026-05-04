@@ -214,11 +214,26 @@ Checks:
 
 ---
 
-## 第十四步：截图或生成 preview 图
+## 第十四步：设置开源维护文件
+
+从模板创建新项目时，以下文件已包含在内，需要按需定制：
+
+- `CONTRIBUTING.md` — 定制为你的项目的贡献指南
+- `SECURITY.md` — 审查并更新安全联系信息
+- `.github/ISSUE_TEMPLATE/` — 定制 Issue 表单的标签和字段
+- `.github/pull_request_template.md` — 定制 PR 检查清单
+- `docs/GITHUB_REPO_SETUP.md` — 按照此指南设置新仓库
+- `docs/RELEASE_TEMPLATE.md` — 创建 GitHub Release 时使用
+- `scripts/check-release-ready.mjs` — 运行 `npm run release:check` 验证发布就绪状态
+
+---
+
+## 第十五步：截图或生成 preview 图
 
 - 截图首页和核心功能页面。
 - 生成 `docs/assets/preview.svg`（可选）。
 - 生成 `public/og-image.svg`（可选）。
+- 运行 `npm run release:check` 验证所有开源维护文件就绪。
 
 ---
 
