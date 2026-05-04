@@ -25,5 +25,5 @@
   "dir": "ltr",
   "scope": "./",
   "prefer_related_applications": false,
-  "version": "0.6.0"
+  "version": "0.6.1"
 }

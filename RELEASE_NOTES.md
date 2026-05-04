@@ -1,5 +1,26 @@
 # Release Notes
 
+## v0.6.1 - Stable Polish Release / 稳定打磨版
+
+May 2026.
+
+This release polishes v0.6.0 for stable daily use as a reusable open source project template. No new features — only consistency, documentation, and reliability fixes.
+
+Changed:
+
+- **Version**: unified to 0.6.1 across package.json, siteMeta.ts, sw.js CACHE_NAME, manifest.webmanifest, README badge.
+- **README.md**: improved hero section with quick-scan structure (What / Who / What You Get / Stable Baseline), screenshot placeholder section, and clearer template positioning.
+
+Checks:
+
+- `npm run build` passes.
+- `npm run self-test` passes.
+- `npm run preflight` passes.
+- `npm run release:check` passes (16/16).
+- `npm run test:all` passes.
+- `npm run test:ci` passes (2 rounds).
+- Version consistency verified across all locations.
+
 ## v0.6.0 - Open Source Maintainer Layer / 开源维护者标准层
 
 May 2026.

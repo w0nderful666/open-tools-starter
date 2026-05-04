@@ -1,6 +1,6 @@
 # Open Tools Starter
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue)](package.json)
+[![Version](https://img.shields.io/badge/version-0.6.1-blue)](package.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Local First](https://img.shields.io/badge/Local_First-true-teal)]()
 [![No Backend](https://img.shields.io/badge/No_Backend-true-teal)]()
@@ -8,6 +8,59 @@
 [![React](https://img.shields.io/badge/React-18.x-61DAFB)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)]()
 [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF)]()
+
+**A production-ready template for building and publishing small local-first frontend tools on GitHub Pages.**
+
+Not a generic boilerplate — a complete development, testing, deployment, and maintenance template for open source tool projects.
+
+🔗 **Live Demo**: https://w0nderful666.github.io/open-tools-starter/
+
+---
+
+### What is this?
+
+Open Tools Starter is an **engineering template** for launching pure frontend tools. It includes standard project structure, UI components, test suite, release workflow, documentation system, and open source maintainer files — everything you need to go from idea to published GitHub Pages tool.
+
+### Who is it for?
+
+- Solo developers building small frontend utilities
+- Open source maintainers who want a repeatable project scaffold
+- Anyone who needs a Local First / No Backend / Privacy Friendly tool template
+
+### What you get
+
+| Layer | Included |
+|-------|----------|
+| **Project structure** | Standard directory layout, `siteMeta.ts` single source of truth, module registry, C/B/A level system |
+| **UI framework** | Button, Card, Modal, Toast, EmptyState, ErrorState, CopyButton, DownloadButton |
+| **Test suite** | self-test, preflight, release:check, pressure test, privacy check, UI contract check |
+| **Release workflow** | GitHub Actions → quality chain → GitHub Pages deployment |
+| **Documentation** | README, RELEASE_NOTES, NEW_PROJECT_PLAYBOOK, MODULE_CONTRACT, QUALITY_BAR, OPENCODE_PRESETS |
+| **Open source files** | CONTRIBUTING, SECURITY, Issue Templates (YAML forms), PR Template, Release Template |
+| **Starter Wizard** | 12 generated artifacts: PROJECT_SPEC, OpenCode prompt, create-project command, README draft, checklist, spec JSON, repo setup, release draft, roadmap issues, screenshot guide, security summary, contributing summary |
+
+### Stable baseline
+
+v0.6.1 is the current stable release line. It is intended for daily use as a reusable template. No breaking changes from v0.6.0. See [RELEASE_NOTES.md](RELEASE_NOTES.md) for details.
+
+---
+
+## Screenshots
+
+> Recommended screenshots to add when forking this template:
+>
+> 1. **Home dashboard** — Hero section with tags and quality meter
+> 2. **Starter Wizard** — Form and live output panel
+> 3. **Generated artifacts** — 12 output cards with copy/download
+> 4. **Self-test page** — `/self-test.html` browser test results
+>
+> Save to `docs/assets/` and reference here:
+> ```md
+> ![Home](docs/assets/screenshot-home.png)
+> ![Wizard](docs/assets/screenshot-wizard.png)
+> ```
+
+---
 
 ## 项目定位
 
@@ -21,12 +74,13 @@
 - 标准 UI 框架（卡片、按钮、弹窗、Toast、空状态、错误状态）
 - 标准配置入口（siteMeta.ts）
 - 标准文档体系（等级、模块矩阵、质量检查、启动手册）
-- 标准测试体系（self-test、preflight、压力测试）
+- 标准测试体系（self-test、preflight、压力测试、release:check）
 - 标准发布流程（GitHub Actions → GitHub Pages）
 - 标准隐私说明（Local First、No Backend、No Upload）
 - 标准项目等级规范（C / B / A）
 - 标准 OpenCode/Codex 开发提示词
 - 标准新项目启动流程
+- 标准开源维护文件（CONTRIBUTING、SECURITY、Issue Templates、PR Template）
 
 ## 适合做什么项目
 
