@@ -2,143 +2,137 @@ import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
+const failures = [];
 
-const requiredFiles = [
-  "README.md",
-  "RELEASE_NOTES.md",
-  "docs/PROJECT_LEVELS.md",
-  "docs/MODULE_MATRIX.md",
-  "docs/OPENCODE_PRESETS.md",
-  "docs/RELEASE_CHECKLIST.md",
-  "docs/NEW_PROJECT_START_GUIDE.md",
-  "docs/PROJECT_SPEC_TEMPLATE.md",
-  "docs/TEMPLATE_MAINTENANCE.md",
-  "docs/COPY_TO_NEW_REPO_CHECKLIST.md",
-  "docs/VERSIONING_GUIDE.md",
-  "src/App.tsx",
-  "src/config/projectProfiles.ts",
-  "src/config/moduleRegistry.ts",
-  "src/components/Button.tsx",
-  "src/components/Card.tsx",
-  "src/components/Modal.tsx",
-  "src/components/Toast.tsx",
-  "src/components/EmptyState.tsx",
-  "src/components/ErrorState.tsx",
-  "src/components/CopyButton.tsx",
-  "src/components/DownloadButton.tsx",
-  "src/components/ErrorBoundary.tsx",
-  "src/components/StarterWizard.tsx",
-  "CONTRIBUTING.md",
-  "SECURITY.md",
-  "src/lib/storage.ts",
-  "src/lib/registerServiceWorker.ts",
-  "self-test.html",
-  "public/self-test.js",
-  "public/manifest.webmanifest",
-  "public/icon.svg",
-  "public/sw.js",
-  "dist/index.html",
-  "dist/self-test.html",
-  "dist/self-test.js",
-];
-
-const requiredSourceMarkers = [
-  ["src/App.tsx", "data-testid=\"theme-toggle\""],
-  ["src/App.tsx", "data-testid=\"language-toggle\""],
-  ["src/App.tsx", "data-testid=\"module-matrix\""],
-  ["src/App.tsx", "data-testid=\"selected-profile\""],
-  ["src/App.tsx", "data-config-source=\"projectProfiles,moduleRegistry\""],
-  ["src/App.tsx", "Local First"],
-  ["src/App.tsx", "data-testid=\"template-health\""],
-  ["src/App.tsx", "health-grid"],
-  ["src/App.tsx", "data-testid=\"capabilities-section\""],
-  ["src/App.tsx", "data-testid=\"quality-section\""],
-  ["src/App.tsx", "data-testid=\"resources-section\""],
-  ["src/components/StarterWizard.tsx", "data-testid=\"starter-wizard\""],
-  ["src/App.tsx", "data-testid=\"flow-section\""],
-  ["src/components/ErrorBoundary.tsx", "ErrorBoundary"],
-  ["src/components/ErrorBoundary.tsx", "data-error-boundary"],
-  ["src/lib/registerServiceWorker.ts", "registerServiceWorker"],
-  ["src/config/projectProfiles.ts", "C_LEVEL_PROFILE"],
-  ["src/config/projectProfiles.ts", "B_LEVEL_PROFILE"],
-  ["src/config/projectProfiles.ts", "A_LEVEL_PROFILE"],
-  ["src/config/moduleRegistry.ts", "MODULE_REGISTRY"],
-  ["src/config/moduleRegistry.ts", "not-recommended"],
-  ["src/lib/storage.ts", "isAvailable"],
-  ["src/tools/toolRegistry.ts", "registeredTools"],
-  ["public/self-test.js", "Theme toggle works"],
-  ["public/self-test.js", "Language toggle works"],
-  ["public/self-test.js", "A/B/C level cards exist"],
-  ["public/self-test.js", "Configuration data is readable"],
-  ["public/self-test.js", "Copy button works"],
-  ["public/self-test.js", "Download button works"],
-  ["public/self-test.js", "Template Health region exists"],
-  ["public/self-test.js", "ErrorBoundary root exists"],
-  ["public/manifest.webmanifest", "name"],
-  ["public/manifest.webmanifest", "theme_color"],
-  ["public/sw.js", "CACHE_NAME"],
-  ["docs/MODULE_MATRIX.md", "| GitHub Pages 部署 | 必须 | 必须 | 必须 |"],
-  ["docs/PROJECT_LEVELS.md", "C 级项目：轻量小工具"],
-  ["docs/NEW_PROJECT_START_GUIDE.md", "如何从 open-tools-starter 复制一个新项目"],
-  ["docs/PROJECT_SPEC_TEMPLATE.md", "项目等级"],
-  ["docs/TEMPLATE_MAINTENANCE.md", "Version History"],
-  ["docs/COPY_TO_NEW_REPO_CHECKLIST.md", "Must Change Files"],
-  ["docs/VERSIONING_GUIDE.md", "Version Format"],
-  ["index.html", "og:title"],
-  ["index.html", "theme-color"],
-];
-
-async function exists(filePath) {
-  await access(path.join(root, filePath));
+async function read(file) {
+  return readFile(path.join(root, file), "utf8");
 }
 
-async function assertContains(filePath, marker) {
-  const content = await readFile(path.join(root, filePath), "utf8");
-  if (!content.includes(marker)) {
-    throw new Error(`${filePath} is missing marker: ${marker}`);
-  }
+async function exists(file) {
+  await access(path.join(root, file));
 }
 
-async function assertDistAssets() {
-  const assetDir = path.join(root, "dist", "assets");
-  const assets = await readdir(assetDir);
-  const hasJs = assets.some((file) => file.endsWith(".js"));
-  const hasCss = assets.some((file) => file.endsWith(".css"));
-  if (!hasJs || !hasCss) {
-    throw new Error("dist/assets must contain built JS and CSS files.");
-  }
+function fail(message) {
+  failures.push(message);
+  console.error(`FAIL ${message}`);
 }
 
-const checks = [
-  ...requiredFiles.map((file) => ({
-    name: `exists: ${file}`,
-    run: () => exists(file),
-  })),
-  ...requiredSourceMarkers.map(([file, marker]) => ({
-    name: `marker: ${file}`,
-    run: () => assertContains(file, marker),
-  })),
-  {
-    name: "dist assets include JS and CSS",
-    run: assertDistAssets,
-  },
-];
+function pass(message) {
+  console.log(`PASS ${message}`);
+}
 
-let failed = 0;
-
-for (const check of checks) {
+async function assertExists(file) {
   try {
-    await check.run();
-    console.log(`PASS ${check.name}`);
-  } catch (error) {
-    failed += 1;
-    console.error(`FAIL ${check.name}`);
-    console.error(error instanceof Error ? error.message : String(error));
+    await exists(file);
+    pass(`exists: ${file}`);
+  } catch {
+    fail(`missing file: ${file}`);
   }
 }
 
-if (failed > 0) {
-  console.error(`Self-test failed: ${failed} check(s) failed.`);
+async function assertContains(file, marker) {
+  try {
+    const content = await read(file);
+    if (content.includes(marker)) pass(`${file} contains ${marker}`);
+    else fail(`${file} missing ${marker}`);
+  } catch {
+    fail(`cannot read ${file}`);
+  }
+}
+
+async function assertPackageVersion() {
+  const pkg = JSON.parse(await read("package.json"));
+  if (pkg.version === "0.1.0") pass("package.json version is 0.1.0");
+  else fail(`package.json version is ${pkg.version}`);
+}
+
+async function assertNoRealSecretsInSamples() {
+  const content = await read("src/data/sampleClips.ts");
+  const patterns = [
+    /sk-(?!demo)[a-zA-Z0-9]{20,}/,
+    /ghp_(?!demo)[a-zA-Z0-9]{20,}/,
+    /bearer\s+(?!token_demo)[a-zA-Z0-9._-]{20,}/i,
+  ];
+  if (patterns.some((pattern) => pattern.test(content))) fail("sample data may contain a real API Key / Token");
+  else pass("sample data uses placeholders only");
+}
+
+async function assertDistNoSecrets() {
+  try {
+    const assetDir = path.join(root, "dist", "assets");
+    const files = await readdir(assetDir);
+    const jsFiles = files.filter((file) => file.endsWith(".js"));
+    const content = (await Promise.all(jsFiles.map((file) => readFile(path.join(assetDir, file), "utf8")))).join("\n");
+    const suspicious = [
+      /sk-(?!demo)[a-zA-Z0-9]{20,}/,
+      /ghp_(?!demo)[a-zA-Z0-9]{20,}/,
+      /bearer\s+(?!token_demo)[a-zA-Z0-9._-]{20,}/i,
+    ];
+    if (suspicious.some((pattern) => pattern.test(content))) fail("dist may contain an obvious real secret");
+    else pass("dist does not contain obvious real secrets");
+  } catch {
+    fail("dist build artifacts are missing");
+  }
+}
+
+await assertPackageVersion();
+await assertExists("README.md");
+await assertExists("RELEASE_NOTES.md");
+await assertExists("src/App.tsx");
+await assertExists("src/config/siteMeta.ts");
+await assertExists("src/lib/clipboardUtils.ts");
+await assertExists("src/lib/clipboardStorage.ts");
+await assertExists("src/lib/cryptoVault.ts");
+await assertExists("src/data/sampleClips.ts");
+
+await assertContains("src/config/siteMeta.ts", "Local Clipboard Vault");
+await assertContains("README.md", "Local First");
+await assertContains("README.md", "No Backend");
+await assertContains("README.md", "GitHub Pages Ready");
+await assertContains("README.md", "隐私");
+await assertContains("README.md", "Quick Capture");
+await assertContains("README.md", "Floating Cards");
+await assertContains("README.md", "Secure Vault");
+await assertContains("README.md", "不上传用户内容");
+await assertContains("README.md", "No remote AI");
+await assertContains("README.md", "主密码不保存");
+await assertContains("README.md", "忘记主密码无法恢复");
+await assertContains("RELEASE_NOTES.md", "v0.1.0");
+
+await assertContains("src/App.tsx", "navigator.clipboard.readText");
+await assertContains("src/App.tsx", "Ctrl + Enter");
+await assertContains("src/lib/clipboardUtils.ts", "generateClipTitle");
+await assertContains("src/lib/clipboardUtils.ts", "detectClipType");
+await assertContains("src/App.tsx", "Floating Cards");
+await assertContains("src/App.tsx", "data-testid=\"clip-card\"");
+await assertContains("src/App.tsx", "copyClip");
+await assertContains("src/App.tsx", "openEdit");
+await assertContains("src/App.tsx", "cloneClip");
+await assertContains("src/App.tsx", "deleteClip");
+await assertContains("src/App.tsx", "pinned");
+await assertContains("src/App.tsx", "favorite");
+await assertContains("src/lib/clipboardUtils.ts", "sensitive");
+await assertContains("src/lib/clipboardUtils.ts", "encrypted");
+await assertContains("src/lib/clipboardUtils.ts", "createdAt");
+await assertContains("src/lib/clipboardUtils.ts", "updatedAt");
+await assertContains("src/App.tsx", "importJson");
+await assertContains("src/App.tsx", "exportJson");
+await assertContains("src/lib/cryptoVault.ts", "crypto.subtle");
+await assertContains("src/lib/cryptoVault.ts", "AES-GCM");
+await assertContains("src/lib/cryptoVault.ts", "PBKDF2");
+await assertContains("src/lib/cryptoVault.ts", "salt");
+await assertContains("src/lib/cryptoVault.ts", "iv");
+await assertContains("src/lib/cryptoVault.ts", "ciphertext");
+await assertContains("src/App.tsx", "locked");
+await assertContains("src/App.tsx", "unlocked");
+await assertContains("src/lib/cryptoVault.ts", "AUTO_LOCK_MINUTES");
+await assertContains("src/App.tsx", "setLanguage");
+
+await assertNoRealSecretsInSamples();
+await assertDistNoSecrets();
+
+if (failures.length > 0) {
+  console.error(`Self-test failed: ${failures.length} issue(s).`);
   process.exit(1);
 }
 

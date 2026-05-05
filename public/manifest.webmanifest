@@ -1,11 +1,11 @@
 {
-  "name": "Open Tools Starter",
-  "short_name": "Open Tools",
-  "description": "A local-first, privacy-friendly reusable template for pure frontend GitHub Pages tools.",
+  "name": "Local Clipboard Vault",
+  "short_name": "LCV",
+  "description": "A Local First clipboard vault for saving and encrypting snippets in the browser.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f7fb",
-  "theme_color": "#256f6b",
+  "theme_color": "#1f7a70",
   "icons": [
     {
       "src": "./icon.svg",
@@ -20,10 +20,10 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["developer tools", "utilities"],
+  "categories": ["developer tools", "utilities", "productivity"],
   "lang": "en",
   "dir": "ltr",
   "scope": "./",
   "prefer_related_applications": false,
-  "version": "0.6.1"
+  "version": "0.1.0"
 }
