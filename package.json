@@ -1,9 +1,9 @@
 {
-  "name": "local-clipboard-vault",
-  "version": "0.1.0",
+  "name": "open-tools-starter",
+  "version": "0.6.1",
   "private": true,
   "type": "module",
-  "description": "A local-first clipboard vault for saving, searching, and encrypting snippets in the browser.",
+  "description": "A local-first, privacy-friendly starter template for pure frontend GitHub Pages tools.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -19,20 +19,30 @@
     "vite",
     "react",
     "typescript",
-    "clipboard",
-    "vault",
-    "web-crypto"
+    "starter",
+    "template"
   ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "check": "tsc -b",
     "preview": "vite preview",
     "self-test": "node scripts/run-self-test.mjs",
     "preflight": "node scripts/preflight.mjs",
-    "release:check": "npm run preflight",
-    "test:all": "npm run build && npm run self-test && npm run preflight",
-    "test:ci": "npm run test:all"
+    "test:static": "node scripts/test-static.mjs",
+    "test:config": "node scripts/test-config.mjs",
+    "test:docs": "node scripts/test-docs.mjs",
+    "test:health": "node scripts/test-project-health.mjs",
+    "test:privacy": "node scripts/test-privacy-boundary.mjs",
+    "test:usability": "node scripts/test-template-usability.mjs",
+    "test:ui": "node scripts/test-ui-contract.mjs",
+    "test:dist": "node scripts/test-dist.mjs",
+    "test:pressure": "node scripts/pressure-test.mjs",
+    "create:project": "node scripts/create-project.mjs",
+    "test:scaffold": "node scripts/test-scaffold.mjs",
+    "test:template-lock": "node scripts/test-template-lock.mjs",
+    "release:check": "node scripts/check-release-ready.mjs",
+    "test:all": "npm run test:static && npm run test:config && npm run test:docs && npm run test:health && npm run test:privacy && npm run test:usability && npm run test:template-lock && npm run build && npm run self-test && npm run test:dist && npm run test:ui && npm run test:scaffold && npm run preflight && npm run release:check",
+    "test:ci": "npm run test:all && npm run test:pressure -- --rounds=2"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

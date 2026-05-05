@@ -1,11 +1,11 @@
 export const siteMeta = {
-  name: "Local Clipboard Vault",
-  shortName: "LCV",
-  version: "0.1.0",
-  description: "A Local First clipboard vault for saving, searching, and encrypting snippets in the browser.",
+  name: "open-tools-starter",
+  shortName: "OTS",
+  version: "0.6.1",
+  description: "A local-first, privacy-friendly starter template for pure frontend GitHub Pages tools.",
   repositoryUrl: "https://github.com/w0nderful666/open-tools-starter",
   demoUrl: "https://w0nderful666.github.io/open-tools-starter/",
-  author: "w0nderful666",
+  author: "Open Tools Starter contributors",
   license: "MIT",
   keywords: [
     "GitHub Pages",
@@ -16,11 +16,10 @@ export const siteMeta = {
     "Vite",
     "React",
     "TypeScript",
-    "clipboard",
-    "vault",
-    "web-crypto"
+    "starter",
+    "template"
   ],
-  localStoragePrefix: "local-clipboard-vault"
+  localStoragePrefix: "open-tools-starter"
 } as const;
 
 export type SiteMeta = typeof siteMeta;

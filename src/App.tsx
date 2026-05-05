@@ -1,513 +1,271 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Clipboard,
-  Copy,
-  Download,
-  Eye,
-  EyeOff,
+  Boxes,
+  CheckCircle2,
+  ClipboardCopy,
   FileJson,
-  Heart,
+  Github,
   Languages,
-  Lock,
+  Layers3,
   Moon,
-  Pencil,
-  Pin,
-  Plus,
-  Search,
+  PanelTop,
   ShieldCheck,
   Sparkles,
   Sun,
-  Trash2,
-  Upload,
+  Zap,
+  BookOpen,
+  GitBranch,
+  ArrowRight,
+  ExternalLink,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { CopyButton } from "@/components/CopyButton";
+import { DownloadButton } from "@/components/DownloadButton";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
 import { Modal } from "@/components/Modal";
+import { StarterWizard } from "@/components/StarterWizard";
 import { Toast, type ToastMessage } from "@/components/Toast";
-import { siteMeta } from "@/config/siteMeta";
-import { sampleClips } from "@/data/sampleClips";
-import { clipboardStorage } from "@/lib/clipboardStorage";
 import {
-  CLIP_TYPES,
-  type ClipItem,
-  type ClipType,
-  createClipFromContent,
-  detectClipType,
-  generateClipTitle,
-  summarizeClip,
-} from "@/lib/clipboardUtils";
-import { AUTO_LOCK_MINUTES, decryptContent, encryptContent } from "@/lib/cryptoVault";
+  CATEGORY_LABELS,
+  MODULE_REGISTRY,
+  STATUS_LABELS,
+  getModuleById,
+  getStatusForLevel,
+  type ModuleDefinition,
+  type ModuleId,
+  type ModuleStatus,
+  type ProjectLevel,
+} from "@/config/moduleRegistry";
+import { PROJECT_PROFILES, type ProjectProfile } from "@/config/projectProfiles";
+import { siteMeta } from "@/config/siteMeta";
+import { usePersistentState } from "@/hooks/usePersistentState";
+import { messages, type Language } from "@/i18n/messages";
+import { storage } from "@/lib/storage";
 
 type Theme = "light" | "dark";
-type Language = "zh" | "en";
-type FilterMode = {
-  query: string;
-  type: "All" | ClipType;
-  tag: string;
-  onlyPinned: boolean;
-  onlyFavorite: boolean;
+
+const cLevelPromptZh = `请基于 open-tools-starter 创建一个 C 级纯前端小工具。
+要求：Vite + React + TypeScript、GitHub Pages Ready、移动端适配、深色模式、中英文切换、示例数据、一键复制、README、无后端、无登录、不上传用户文件。
+请保持轻量，不要引入重依赖，不要实现超出 C 级范围的复杂能力。`;
+
+const cLevelPromptEn = `Create a Level C pure frontend tool based on open-tools-starter.
+Requirements: Vite + React + TypeScript, GitHub Pages Ready, mobile layout, dark mode, Chinese/English copy, sample data, one-click copy, README, no backend, no login, and no file uploads.
+Keep it lightweight and avoid heavy dependencies or features beyond Level C scope.`;
+
+const levelTone: Record<ProjectLevel, "teal" | "amber" | "blue"> = {
+  C: "teal",
+  B: "amber",
+  A: "blue",
 };
 
-const text = {
+const statusOrder: ModuleStatus[] = [
+  "required",
+  "recommended",
+  "optional",
+  "not-recommended",
+];
+
+const statusCopy: Record<
+  Language,
+  Record<ModuleStatus, { title: string; help: string }>
+> = {
   zh: {
-    localName: "本地剪贴内容保险箱",
-    tagline: "Local First / No Backend / GitHub Pages Ready 的本地内容浮窗工作台。",
-    quickCapture: "Quick Capture",
-    pasteFromClipboard: "从剪贴板导入",
-    manualPaste: "手动粘贴",
-    saveContent: "保存内容",
-    ctrlEnter: "Press Ctrl + Enter to save",
-    sensitive: "敏感内容",
-    autoTitle: "自动标题",
-    autoType: "自动类型识别",
-    floatingCards: "Floating Cards",
-    recentClips: "Recent clips",
-    search: "搜索",
-    tags: "标签",
-    type: "类型",
-    copy: "复制",
-    edit: "编辑",
-    clone: "克隆",
-    delete: "删除",
-    pin: "置顶",
-    favorite: "收藏",
-    reveal: "Reveal / Hide",
-    details: "Open details",
-    unlockVault: "Unlock vault",
-    lockVault: "Lock vault",
-    masterPassword: "Master password",
-    locked: "Vault locked",
-    unlocked: "Vault unlocked",
-    encryptionEnabled: "Encryption enabled",
-    unlockToReveal: "Unlock to reveal",
-    importJson: "Import JSON",
-    exportJson: "Export JSON",
-    loadSample: "Load sample data",
-    clearAll: "Clear all data",
-    privacyFirst: "Privacy first",
-    localOnly: "Local only",
-    noBackend: "No backend",
-    savedFromClipboard: "Saved from clipboard",
-    saved: "Saved",
-    clipboardDenied: "Clipboard permission denied. Use Ctrl + V manually.",
-    unlockFirst: "Unlock vault before saving or revealing sensitive content.",
-    imported: "JSON imported",
-    exported: "JSON exported",
-    deleted: "Deleted",
-    noResults: "No clips match the current filters.",
-    privacyNote:
-      "Your content never leaves this page. Data is stored in this browser only; clearing browser data removes it. Export JSON backups regularly.",
+    required: { title: "必须启用", help: "复制新项目时默认保留。" },
+    recommended: { title: "推荐启用", help: "通常有价值，可按范围裁剪。" },
+    optional: { title: "按需启用", help: "只有业务需要时再加入。" },
+    "not-recommended": { title: "默认删除", help: "当前等级容易过度设计。" },
   },
   en: {
-    localName: "Local Clipboard Vault",
-    tagline: "A Local First / No Backend / GitHub Pages Ready floating workspace for snippets.",
-    quickCapture: "Quick Capture",
-    pasteFromClipboard: "Paste from clipboard",
-    manualPaste: "Manual paste",
-    saveContent: "Save content",
-    ctrlEnter: "Press Ctrl + Enter to save",
-    sensitive: "Sensitive content",
-    autoTitle: "Auto title",
-    autoType: "Local type detection",
-    floatingCards: "Floating Cards",
-    recentClips: "Recent clips",
-    search: "Search",
-    tags: "Tags",
-    type: "Type",
-    copy: "Copy",
-    edit: "Edit",
-    clone: "Clone",
-    delete: "Delete",
-    pin: "Pin",
-    favorite: "Favorite",
-    reveal: "Reveal / Hide",
-    details: "Open details",
-    unlockVault: "Unlock vault",
-    lockVault: "Lock vault",
-    masterPassword: "Master password",
-    locked: "Vault locked",
-    unlocked: "Vault unlocked",
-    encryptionEnabled: "Encryption enabled",
-    unlockToReveal: "Unlock to reveal",
-    importJson: "Import JSON",
-    exportJson: "Export JSON",
-    loadSample: "Load sample data",
-    clearAll: "Clear all data",
-    privacyFirst: "Privacy first",
-    localOnly: "Local only",
-    noBackend: "No backend",
-    savedFromClipboard: "Saved from clipboard",
-    saved: "Saved",
-    clipboardDenied: "Clipboard permission denied. Paste manually with Ctrl + V.",
-    unlockFirst: "Unlock vault before saving or revealing sensitive content.",
-    imported: "JSON imported",
-    exported: "JSON exported",
-    deleted: "Deleted",
-    noResults: "No clips match the current filters.",
-    privacyNote:
-      "Your content never leaves this page. Data is stored in this browser only; clearing browser data removes it. Export JSON backups regularly.",
+    required: { title: "Enable by default", help: "Keep when copying a new project." },
+    recommended: { title: "Recommended", help: "Usually useful, but scope-dependent." },
+    optional: { title: "Use when needed", help: "Add only when the product needs it." },
+    "not-recommended": { title: "Remove by default", help: "Likely over-scoped for this level." },
   },
-} satisfies Record<Language, Record<string, string>>;
+};
 
 function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const saved = window.localStorage.getItem(`${siteMeta.localStoragePrefix}.theme`);
-  if (saved === "light" || saved === "dark") return saved;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
-function getInitialLanguage(): Language {
-  if (typeof window === "undefined") return "zh";
-  return window.localStorage.getItem(`${siteMeta.localStoragePrefix}.language`) === "en" ? "en" : "zh";
+function localize<T extends { zh: string; en: string }>(
+  value: T,
+  language: Language,
+): string {
+  return value[language];
 }
 
-function formatTime(value: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
+function getProfileModules(profile: ProjectProfile, status: ModuleStatus): ModuleDefinition[] {
+  const idsByStatus: Record<ModuleStatus, ModuleId[]> = {
+    required: profile.requiredModules,
+    recommended: profile.recommendedModules,
+    optional: profile.optionalModules,
+    "not-recommended": profile.notRecommendedModules,
+  };
+
+  return idsByStatus[status].map((id) => getModuleById(id));
 }
 
-function sortClips(clips: ClipItem[]): ClipItem[] {
-  return [...clips].sort((a, b) => {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
-    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-  });
+function getModulePreviewLabel(language: Language, count: number): string {
+  return language === "zh" ? `${count} 个模块` : `${count} modules`;
 }
 
-function matchesFilter(clip: ClipItem, filter: FilterMode, revealedContent?: string): boolean {
-  if (filter.type !== "All" && clip.type !== filter.type) return false;
-  if (filter.onlyPinned && !clip.pinned) return false;
-  if (filter.onlyFavorite && !clip.favorite) return false;
-  if (filter.tag && !clip.tags.includes(filter.tag)) return false;
+const capabilityIcons = [
+  <Layers3 size={24} />,
+  <PanelTop size={24} />,
+  <ShieldCheck size={24} />,
+  <Github size={24} />,
+  <ShieldCheck size={24} />,
+  <BookOpen size={24} />,
+];
 
-  const query = filter.query.trim().toLowerCase();
-  if (!query) return true;
-
-  const searchable = [
-    clip.title,
-    clip.type,
-    clip.note,
-    clip.tags.join(" "),
-    clip.encrypted && !revealedContent ? "" : revealedContent ?? clip.content ?? "",
-  ].join(" ").toLowerCase();
-
-  return searchable.includes(query);
-}
-
-function downloadText(fileName: string, content: string): void {
-  const blob = new Blob([content], { type: "application/json;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
+const capabilityTones: Array<"teal" | "blue" | "amber" | "rose"> = [
+  "teal",
+  "blue",
+  "amber",
+  "rose",
+  "teal",
+  "blue",
+];
 
 export function App() {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
-  const [language, setLanguage] = useState<Language>(getInitialLanguage);
-  const [clips, setClips] = useState<ClipItem[]>([]);
-  const [storageLoaded, setStorageLoaded] = useState(false);
-  const [manualText, setManualText] = useState("");
-  const [manualSensitive, setManualSensitive] = useState(false);
-  const [filter, setFilter] = useState<FilterMode>({
-    query: "",
-    type: "All",
-    tag: "",
-    onlyPinned: false,
-    onlyFavorite: false,
-  });
-  const [vaultPassword, setVaultPassword] = useState("");
-  const [passwordInput, setPasswordInput] = useState("");
-  const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const [editing, setEditing] = useState<ClipItem | null>(null);
-  const [editContent, setEditContent] = useState("");
-  const [editTags, setEditTags] = useState("");
+  const [theme, setTheme] = usePersistentState<Theme>(
+    `${siteMeta.localStoragePrefix}.theme`,
+    getInitialTheme(),
+  );
+  const [language, setLanguage] = usePersistentState<Language>(
+    `${siteMeta.localStoragePrefix}.language`,
+    "zh",
+  );
+  const [selectedLevel, setSelectedLevel] = useState<ProjectLevel>("C");
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const importInputRef = useRef<HTMLInputElement | null>(null);
-  const t = text[language];
-  const vaultUnlocked = vaultPassword.length > 0;
+
+  const t = messages[language];
+  const storageReady = storage.isAvailable();
+  const selectedProfile = PROJECT_PROFILES.find(
+    (profile) => profile.level === selectedLevel,
+  ) as ProjectProfile;
+
+  const manifest = useMemo(
+    () =>
+      JSON.stringify(
+        {
+          name: siteMeta.name,
+          shortName: siteMeta.shortName,
+          version: siteMeta.version,
+          description: siteMeta.description,
+          repositoryUrl: siteMeta.repositoryUrl,
+          demoUrl: siteMeta.demoUrl,
+          phase: "reusable-template",
+          principles: ["Local First", "No Backend", "Privacy Friendly", "GitHub Pages Ready"],
+          levelSystem: PROJECT_PROFILES.map((profile) => profile.level),
+          modules: MODULE_REGISTRY.map((module) => module.id),
+          selectedLevel,
+          selectedRequiredModules: selectedProfile.requiredModules,
+          docs: [
+            "docs/PROJECT_LEVELS.md",
+            "docs/MODULE_MATRIX.md",
+            "docs/OPENCODE_PRESETS.md",
+            "docs/NEW_PROJECT_PLAYBOOK.md",
+            "docs/MODULE_CONTRACT.md",
+            "docs/QUALITY_BAR.md",
+            "docs/PROJECT_SPEC_TEMPLATE.md",
+            "docs/RELEASE_CHECKLIST.md",
+          ],
+        },
+        null,
+        2,
+      ),
+    [selectedLevel, selectedProfile.requiredModules],
+  );
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.lang = language;
     document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
-    window.localStorage.setItem(`${siteMeta.localStoragePrefix}.theme`, theme);
-    window.localStorage.setItem(`${siteMeta.localStoragePrefix}.language`, language);
   }, [theme, language]);
 
   useEffect(() => {
-    const saved = clipboardStorage.readAll();
-    const next = saved.length > 0 ? saved : sampleClips;
-    setClips(sortClips(next));
-    setStorageLoaded(true);
-    if (saved.length === 0) {
-      clipboardStorage.saveAll(sampleClips);
+    if (!toast) {
+      return undefined;
     }
-  }, []);
 
-  useEffect(() => {
-    if (storageLoaded) {
-      clipboardStorage.saveAll(sortClips(clips));
-    }
-  }, [clips, storageLoaded]);
-
-  useEffect(() => {
-    if (!toast) return undefined;
     const timer = window.setTimeout(() => setToast(null), 2800);
     return () => window.clearTimeout(timer);
   }, [toast]);
-
-  useEffect(() => {
-    if (!vaultUnlocked) return undefined;
-    let timer = window.setTimeout(lockVault, AUTO_LOCK_MINUTES * 60 * 1000);
-    const reset = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(lockVault, AUTO_LOCK_MINUTES * 60 * 1000);
-    };
-    window.addEventListener("keydown", reset);
-    window.addEventListener("pointerdown", reset);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("keydown", reset);
-      window.removeEventListener("pointerdown", reset);
-    };
-  }, [vaultUnlocked]);
-
-  const tags = useMemo(
-    () => Array.from(new Set(clips.flatMap((clip) => clip.tags))).sort(),
-    [clips],
-  );
-
-  const filteredClips = useMemo(
-    () => sortClips(clips).filter((clip) => matchesFilter(clip, filter, revealed[clip.id])),
-    [clips, filter, revealed],
-  );
 
   const showToast = (text: string, tone: ToastMessage["tone"] = "success") => {
     setToast({ id: Date.now(), text, tone });
   };
 
-  const persistClip = async (clip: ClipItem, content: string): Promise<ClipItem | null> => {
-    if (!clip.sensitive) {
-      return {
-        ...clip,
-        content,
-        encrypted: false,
-        encryptedPayload: undefined,
-      };
-    }
-
-    if (!vaultUnlocked) {
-      showToast(t.unlockFirst, "danger");
-      return null;
-    }
-
-    const encryptedPayload = await encryptContent(content, vaultPassword);
-    return {
-      ...clip,
-      content: undefined,
-      encrypted: true,
-      encryptedPayload,
-    };
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+    showToast(t.toast.themeChanged);
   };
 
-  const saveNewContent = async (content: string, sensitive = manualSensitive) => {
-    const trimmed = content.trim();
-    if (!trimmed) return;
-    const created = createClipFromContent(trimmed, { sensitive });
-    const stored = await persistClip(created, trimmed);
-    if (!stored) return;
-    setClips((current) => sortClips([stored, ...current]));
-    setManualText("");
-    setManualSensitive(false);
-    showToast(t.saved);
+  const toggleLanguage = () => {
+    setLanguage(language === "zh" ? "en" : "zh");
+    showToast(t.toast.languageChanged);
   };
 
-  const importFromClipboard = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      await saveNewContent(text);
-      showToast(t.savedFromClipboard);
-    } catch {
-      showToast(t.clipboardDenied, "danger");
-    }
+  const openMatrix = () => {
+    setIsMatrixOpen(true);
+    showToast(t.toast.modalOpened);
   };
 
-  const copyClip = async (clip: ClipItem) => {
-    const content = clip.encrypted ? revealed[clip.id] : clip.content;
-    if (clip.encrypted && !content) {
-      showToast(t.unlockFirst, "danger");
-      return;
-    }
-    await navigator.clipboard.writeText(content ?? "");
-    showToast(t.copy);
-  };
-
-  const revealClip = async (clip: ClipItem) => {
-    if (!clip.encrypted || !clip.encryptedPayload) return;
-    if (revealed[clip.id]) {
-      setRevealed((current) => {
-        const next = { ...current };
-        delete next[clip.id];
-        return next;
-      });
-      return;
-    }
-    if (!vaultUnlocked) {
-      showToast(t.unlockFirst, "danger");
-      return;
-    }
-    try {
-      const content = await decryptContent(clip.encryptedPayload, vaultPassword);
-      setRevealed((current) => ({ ...current, [clip.id]: content }));
-    } catch {
-      showToast("Wrong password or damaged payload.", "danger");
-    }
-  };
-
-  const updateClip = (id: string, patch: Partial<ClipItem>) => {
-    setClips((current) =>
-      sortClips(
-        current.map((clip) =>
-          clip.id === id ? { ...clip, ...patch, updatedAt: new Date().toISOString() } : clip,
-        ),
-      ),
+  const selectLevel = (level: ProjectLevel) => {
+    setSelectedLevel(level);
+    showToast(
+      language === "zh" ? `已选择 ${level} 级 Profile` : `Selected Level ${level} profile`,
     );
   };
 
-  const openEdit = async (clip: ClipItem) => {
-    if (clip.encrypted && !revealed[clip.id]) {
-      await revealClip(clip);
-      if (!vaultUnlocked) return;
-    }
-    setEditing(clip);
-    setEditContent(revealed[clip.id] ?? clip.content ?? "");
-    setEditTags(clip.tags.join(", "));
-  };
-
-  const saveEdit = async () => {
-    if (!editing) return;
-    const updated: ClipItem = {
-      ...editing,
-      title: editing.title.trim() || generateClipTitle(editContent),
-      type: editing.type || detectClipType(editContent),
-      tags: editTags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-      updatedAt: new Date().toISOString(),
-    };
-    const stored = await persistClip(updated, editContent);
-    if (!stored) return;
-    setClips((current) => sortClips(current.map((clip) => (clip.id === stored.id ? stored : clip))));
-    setRevealed((current) => ({ ...current, [stored.id]: editContent }));
-    setEditing(null);
-    showToast(t.saved);
-  };
-
-  const cloneClip = async (clip: ClipItem) => {
-    const sourceContent = revealed[clip.id] ?? clip.content;
-    if (clip.encrypted && !sourceContent) {
-      showToast(t.unlockFirst, "danger");
-      return;
-    }
-    const now = new Date().toISOString();
-    const clone: ClipItem = {
-      ...clip,
-      id: crypto.randomUUID(),
-      title: `${clip.title} Copy`,
-      content: sourceContent,
-      encryptedPayload: undefined,
-      createdAt: now,
-      updatedAt: now,
-    };
-    const stored = await persistClip(clone, sourceContent ?? "");
-    if (!stored) return;
-    setClips((current) => sortClips([stored, ...current]));
-    showToast(t.clone);
-  };
-
-  const deleteClip = (clip: ClipItem) => {
-    if (!window.confirm(`Delete "${clip.title}"?`)) return;
-    setClips((current) => current.filter((item) => item.id !== clip.id));
-    setRevealed((current) => {
-      const next = { ...current };
-      delete next[clip.id];
-      return next;
-    });
-    showToast(t.deleted);
-  };
-
-  function lockVault() {
-    setVaultPassword("");
-    setPasswordInput("");
-    setRevealed({});
-  }
-
-  const exportJson = () => {
-    const date = new Date().toISOString().slice(0, 10);
-    downloadText(
-      `local-clipboard-vault-v${siteMeta.version}-${date}.json`,
-      clipboardStorage.exportJson(clips),
-    );
-    showToast(t.exported);
-  };
-
-  const importJson = async (file: File | undefined) => {
-    if (!file) return;
-    try {
-      const text = await file.text();
-      const merged = clipboardStorage.importJson(text, clips);
-      setClips(sortClips(merged));
-      showToast(t.imported);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : "Import failed.", "danger");
-    }
-  };
-
-  const clearAll = () => {
-    if (!window.confirm("Clear all Local Clipboard Vault data in this browser?")) return;
-    clipboardStorage.clear();
-    setClips([]);
-    setRevealed({});
-    showToast(t.clearAll);
-  };
+  const promptText = language === "zh" ? cLevelPromptZh : cLevelPromptEn;
 
   return (
     <div className="app-shell" data-testid="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#vault" aria-label={siteMeta.name}>
-          <span className="brand__mark" aria-hidden="true"><Clipboard size={21} /></span>
+      <header className="topbar" data-testid="top-nav">
+        <a className="brand" href="#hero" aria-label={siteMeta.name}>
+          <span className="brand__mark" aria-hidden="true">
+            <Boxes size={22} />
+          </span>
           <span>
-            <strong>{siteMeta.name}</strong>
-            <small>{language === "zh" ? t.localName : "Local only clipboard vault"}</small>
+            <strong>Open Tools</strong>
+            <small>Starter</small>
           </span>
         </a>
         <nav className="nav-links" aria-label="Primary">
-          <a href="#capture">{t.quickCapture}</a>
-          <a href="#cards">{t.floatingCards}</a>
-          <a href="#advanced">Advanced Tools</a>
+          <a href="#capabilities">{t.nav.docs}</a>
+          <a href="#levels">{t.nav.levels}</a>
+          <a href="#modules">{t.nav.modules}</a>
+          <a href="#wizard">{t.nav.wizard}</a>
+          <a href="#settings">{t.nav.settings}</a>
         </nav>
         <div className="topbar__actions">
           <Button
-            aria-label="Toggle theme"
+            aria-label={t.settings.theme}
             data-testid="theme-toggle"
             icon={theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={toggleTheme}
             size="sm"
             variant="ghost"
           >
-            {theme === "dark" ? "Light" : "Dark"}
+            {theme === "dark" ? t.settings.themeLight : t.settings.themeDark}
           </Button>
           <Button
-            aria-label="Toggle language"
+            aria-label={t.settings.language}
             data-testid="language-toggle"
             icon={<Languages size={17} />}
-            onClick={() => setLanguage(language === "zh" ? "en" : "zh")}
+            onClick={toggleLanguage}
             size="sm"
             variant="ghost"
           >
@@ -517,254 +275,407 @@ export function App() {
       </header>
 
       <main>
-        <section className="hero section" id="vault">
+        {/* Hero */}
+        <section className="hero section" data-testid="hero" id="hero">
           <div className="hero__content">
-            <p className="eyebrow">v{siteMeta.version} · Local First · No Backend · GitHub Pages Ready</p>
-            <h1>{siteMeta.name}</h1>
-            <p className="hero__body">{t.tagline}</p>
-            <div className="tag-row">
-              <span className="tag"><ShieldCheck size={15} />{t.privacyFirst}</span>
-              <span className="tag"><Lock size={15} />{t.encryptionEnabled}</span>
-              <span className="tag"><FileJson size={15} />JSON import / export</span>
+            <p className="eyebrow">{t.hero.eyebrow}</p>
+            <h1>{t.hero.title}</h1>
+            <p className="hero__body">{t.hero.body}</p>
+            <div className="tag-row" aria-label="Project principles">
+              {t.tags.map((tag) => (
+                <span className="tag" key={tag}>
+                  <CheckCircle2 size={15} aria-hidden="true" />
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div className="hero__actions">
+              <Button icon={<Layers3 size={18} />} onClick={openMatrix} variant="primary">
+                {t.hero.primaryAction}
+              </Button>
+              <CopyButton
+                copiedLabel={t.common.copied}
+                label={t.hero.secondaryAction}
+                onCopied={() => showToast(t.toast.copied)}
+                onError={() => showToast(t.toast.copyFailed, "danger")}
+                text={promptText}
+              />
             </div>
           </div>
-          <aside className="vault-panel">
-            <div className="vault-panel__status">
-              <span className={vaultUnlocked ? "vault-dot vault-dot--open" : "vault-dot"} />
-              <strong>{vaultUnlocked ? t.unlocked : t.locked}</strong>
-              <small>{AUTO_LOCK_MINUTES} min auto lock</small>
-            </div>
-            <label className="field">
-              <span>{t.masterPassword}</span>
-              <input
-                autoComplete="off"
-                onChange={(event) => setPasswordInput(event.target.value)}
-                placeholder="Never saved"
-                type="password"
-                value={passwordInput}
-              />
-            </label>
-            <div className="button-row">
-              <Button
-                icon={<ShieldCheck size={17} />}
-                onClick={() => {
-                  if (!passwordInput) return showToast(t.unlockFirst, "danger");
-                  setVaultPassword(passwordInput);
-                  setPasswordInput("");
-                  showToast(t.unlocked);
-                }}
-                variant="primary"
-              >
-                {t.unlockVault}
-              </Button>
-              <Button icon={<Lock size={17} />} onClick={lockVault}>
-                {t.lockVault}
-              </Button>
-            </div>
-          </aside>
-        </section>
-
-        <section className="workspace">
-          <div className="capture-dock" data-testid="quick-capture" id="capture">
-            <div>
-              <p className="eyebrow">{t.quickCapture}</p>
-              <h2>{t.manualPaste}</h2>
-              <p>{t.autoTitle} · {t.autoType} · {t.ctrlEnter}</p>
-            </div>
-            <textarea
-              aria-label={t.manualPaste}
-              onChange={(event) => setManualText(event.target.value)}
-              onKeyDown={(event) => {
-                if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-                  void saveNewContent(manualText);
-                }
-              }}
-              placeholder="Paste prompt, command, token placeholder, JSON, Markdown..."
-              value={manualText}
-            />
-            <div className="capture-dock__actions">
-              <label className="check">
-                <input
-                  checked={manualSensitive}
-                  onChange={(event) => setManualSensitive(event.target.checked)}
-                  type="checkbox"
-                />
-                {t.sensitive}
-              </label>
-              <Button icon={<Clipboard size={17} />} onClick={importFromClipboard} variant="primary">
-                {t.pasteFromClipboard}
-              </Button>
-              <Button icon={<Plus size={17} />} onClick={() => void saveNewContent(manualText)}>
-                {t.saveContent}
-              </Button>
-            </div>
-          </div>
-
-          <aside className="filter-panel">
-            <label className="search-box">
-              <Search size={17} />
-              <input
-                aria-label={t.search}
-                onChange={(event) => setFilter((current) => ({ ...current, query: event.target.value }))}
-                placeholder={t.search}
-                value={filter.query}
-              />
-            </label>
-            <div className="chip-row">
-              <button className={filter.type === "All" ? "chip is-active" : "chip"} onClick={() => setFilter((current) => ({ ...current, type: "All" }))} type="button">All</button>
-              {CLIP_TYPES.map((type) => (
+          <div className="hero__panel" aria-label="Starter quality gates">
+            <div className="quality-meter">
+              {PROJECT_PROFILES.map((profile) => (
                 <button
-                  className={filter.type === type ? "chip is-active" : "chip"}
-                  key={type}
-                  onClick={() => setFilter((current) => ({ ...current, type }))}
+                  className={selectedLevel === profile.level ? "quality-meter__item is-active" : "quality-meter__item"}
+                  data-testid={`hero-level-${profile.level}`}
+                  key={profile.level}
+                  onClick={() => selectLevel(profile.level)}
                   type="button"
                 >
-                  {type}
+                  {profile.level}
                 </button>
               ))}
             </div>
-            <select
-              aria-label={t.tags}
-              onChange={(event) => setFilter((current) => ({ ...current, tag: event.target.value }))}
-              value={filter.tag}
-            >
-              <option value="">All tags</option>
-              {tags.map((tag) => <option key={tag} value={tag}>{tag}</option>)}
-            </select>
-            <div className="button-row">
-              <Button
-                icon={<Heart size={16} />}
-                onClick={() => setFilter((current) => ({ ...current, onlyFavorite: !current.onlyFavorite }))}
-                variant={filter.onlyFavorite ? "primary" : "secondary"}
-              >
-                {t.favorite}
-              </Button>
-              <Button
-                icon={<Pin size={16} />}
-                onClick={() => setFilter((current) => ({ ...current, onlyPinned: !current.onlyPinned }))}
-                variant={filter.onlyPinned ? "primary" : "secondary"}
-              >
-                {t.pin}
-              </Button>
-            </div>
-            <Button onClick={() => setFilter({ query: "", type: "All", tag: "", onlyPinned: false, onlyFavorite: false })}>
-              Clear filters · {filteredClips.length}
-            </Button>
-          </aside>
+            <ul>
+              <li>
+                <ShieldCheck size={18} aria-hidden="true" />
+                Local data by default
+              </li>
+              <li>
+                <Github size={18} aria-hidden="true" />
+                Pages deployment baseline
+              </li>
+              <li>
+                <Sparkles size={18} aria-hidden="true" />
+                Profile and registry driven
+              </li>
+            </ul>
+          </div>
         </section>
 
-        <section className="section" id="cards">
+        {/* What this starter gives you */}
+        <section className="section" data-testid="capabilities-section" id="capabilities">
           <div className="section__header">
-            <p className="eyebrow">{t.floatingCards}</p>
-            <h2>{t.recentClips}</h2>
-            <p>{filteredClips.length} / {clips.length} clips</p>
+            <p className="eyebrow">Foundation</p>
+            <h2>{t.capabilities.title}</h2>
+            <p>{t.capabilities.intro}</p>
           </div>
-          <div className="floating-grid" data-testid="floating-cards">
-            {filteredClips.map((clip) => (
-              <article className="clip-card" data-testid="clip-card" key={clip.id} onClick={() => void openEdit(clip)}>
-                <div className="clip-card__bar">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-                <div className="clip-card__head">
-                  <div>
-                    <h3>{clip.title}</h3>
-                    <small>{formatTime(clip.updatedAt)}</small>
-                  </div>
-                  <span className="type-badge">{clip.type}</span>
-                </div>
-                <p className="clip-card__summary">{summarizeClip(clip, revealed[clip.id])}</p>
-                <div className="tag-row tag-row--compact">
-                  {clip.tags.map((tag) => <span className="tag tag--small" key={tag}>{tag}</span>)}
-                  {clip.pinned ? <span className="tag tag--small">Pinned</span> : null}
-                  {clip.favorite ? <span className="tag tag--small">Favorite</span> : null}
-                  {clip.sensitive ? <span className="tag tag--small">Sensitive</span> : null}
-                  {clip.encrypted ? <span className="tag tag--small">Encrypted</span> : null}
-                </div>
-                <div className="clip-card__actions" onClick={(event) => event.stopPropagation()}>
-                  <Button icon={<Copy size={15} />} onClick={() => void copyClip(clip)} size="sm">{t.copy}</Button>
-                  <Button icon={<Pencil size={15} />} onClick={() => void openEdit(clip)} size="sm">{t.edit}</Button>
-                  <Button icon={<Sparkles size={15} />} onClick={() => void cloneClip(clip)} size="sm">{t.clone}</Button>
-                  <Button icon={<Pin size={15} />} onClick={() => updateClip(clip.id, { pinned: !clip.pinned })} size="sm" variant={clip.pinned ? "primary" : "secondary"}>{t.pin}</Button>
-                  <Button icon={<Heart size={15} />} onClick={() => updateClip(clip.id, { favorite: !clip.favorite })} size="sm" variant={clip.favorite ? "primary" : "secondary"}>{t.favorite}</Button>
-                  {clip.encrypted ? (
-                    <Button icon={revealed[clip.id] ? <EyeOff size={15} /> : <Eye size={15} />} onClick={() => void revealClip(clip)} size="sm">{t.reveal}</Button>
-                  ) : null}
-                  <Button icon={<Trash2 size={15} />} onClick={() => deleteClip(clip)} size="sm" variant="danger">{t.delete}</Button>
-                </div>
-              </article>
+          <div className="grid grid--three">
+            {t.capabilities.items.map((item, index) => (
+              <Card
+                description={item.body}
+                icon={capabilityIcons[index]}
+                key={item.title}
+                title={item.title}
+                tone={capabilityTones[index]}
+              />
             ))}
           </div>
-          {filteredClips.length === 0 ? <p className="empty-note">{t.noResults}</p> : null}
         </section>
 
-        <section className="advanced section" id="advanced">
+        {/* Project Levels */}
+        <section className="section" data-testid="levels-section" id="levels">
+          <div className="section__header">
+            <p className="eyebrow">Project Profiles</p>
+            <h2>{t.levels.title}</h2>
+            <p>{t.levels.intro}</p>
+          </div>
+          <div className="grid grid--three">
+            {PROJECT_PROFILES.map((profile) => (
+              <Card
+                className={selectedLevel === profile.level ? "level-card is-selected" : "level-card"}
+                description={localize(profile.description, language)}
+                key={profile.level}
+                title={localize(profile.name, language)}
+                tone={levelTone[profile.level]}
+              >
+                <p className="card__subtitle">
+                  {getModulePreviewLabel(language, profile.requiredModules.length)}
+                </p>
+                <ul className="mini-list">
+                  {profile.suitableFor.slice(0, 4).map((item) => (
+                    <li key={localize(item, language)}>{localize(item, language)}</li>
+                  ))}
+                </ul>
+                <Button
+                  data-testid={`level-card-${profile.level}`}
+                  onClick={() => selectLevel(profile.level)}
+                  variant={selectedLevel === profile.level ? "primary" : "secondary"}
+                >
+                  {language === "zh" ? `选择 ${profile.level} 级` : `Select Level ${profile.level}`}
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Module Matrix */}
+        <section
+          className="section split"
+          data-config-source="projectProfiles,moduleRegistry"
+          data-testid="module-matrix"
+          id="modules"
+        >
           <div>
-            <p className="eyebrow">Advanced Tools</p>
-            <h2>{t.privacyFirst}</h2>
-            <p>{t.privacyNote}</p>
+            <p className="eyebrow">Module Registry</p>
+            <h2>{t.matrix.title}</h2>
+            <p>{t.matrix.body}</p>
+            <div className="legend" data-testid="status-legend">
+              {statusOrder.map((status) => (
+                <span className={`legend__item status status--${status}`} key={status}>
+                  {STATUS_LABELS[status][language]}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="advanced__actions">
-            <input
-              accept="application/json"
-              hidden
-              onChange={(event) => void importJson(event.target.files?.[0])}
-              ref={importInputRef}
-              type="file"
+          <Card icon={<PanelTop size={24} />} tone="rose">
+            <div className="matrix-preview" data-testid="module-matrix-preview">
+              <div className="matrix-preview__header">
+                <span>{language === "zh" ? "模块" : "Module"}</span>
+                <span>C</span>
+                <span>B</span>
+                <span>A</span>
+              </div>
+              {MODULE_REGISTRY.slice(0, 9).map((module) => (
+                <div className="matrix-preview__row" data-testid={`module-row-${module.id}`} key={module.id}>
+                  <span>{module.name[language]}</span>
+                  <span className={`status-dot status-dot--${module.cLevelStatus}`} title={STATUS_LABELS[module.cLevelStatus][language]} />
+                  <span className={`status-dot status-dot--${module.bLevelStatus}`} title={STATUS_LABELS[module.bLevelStatus][language]} />
+                  <span className={`status-dot status-dot--${module.aLevelStatus}`} title={STATUS_LABELS[module.aLevelStatus][language]} />
+                </div>
+              ))}
+            </div>
+            <div className="card__actions">
+              <Button icon={<Layers3 size={18} />} onClick={openMatrix} variant="primary">
+                {t.matrix.open}
+              </Button>
+              <CopyButton
+                copiedLabel={t.common.copied}
+                label={t.matrix.copyPath}
+                onCopied={() => showToast(t.toast.copied)}
+                onError={() => showToast(t.toast.copyFailed, "danger")}
+                text="docs/MODULE_MATRIX.md"
+              />
+            </div>
+          </Card>
+        </section>
+
+        {/* Selected Profile Detail */}
+        <section className="section profile-summary" data-testid="selected-profile">
+          <div className="section__header">
+            <p className="eyebrow">Selected Profile</p>
+            <h2>{localize(selectedProfile.name, language)}</h2>
+            <p>{localize(selectedProfile.description, language)}</p>
+          </div>
+          <div className="profile-grid">
+            {statusOrder.map((status) => {
+              const modules = getProfileModules(selectedProfile, status);
+              return (
+                <article className="module-group" data-testid={`profile-${status}`} key={status}>
+                  <div className="module-group__header">
+                    <span className={`status status--${status}`}>
+                      {STATUS_LABELS[status][language]}
+                    </span>
+                    <strong>{statusCopy[language][status].title}</strong>
+                  </div>
+                  <p>{statusCopy[language][status].help}</p>
+                  <ul>
+                    {modules.slice(0, 8).map((module) => (
+                      <li key={module.id}>
+                        <span>{module.name[language]}</span>
+                        <small>{CATEGORY_LABELS[module.category][language]}</small>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* New Project Flow */}
+        <section className="section" data-testid="flow-section">
+          <div className="section__header">
+            <p className="eyebrow">Workflow</p>
+            <h2>{t.flow.title}</h2>
+            <p>{t.flow.intro}</p>
+          </div>
+          <div className="flow-steps">
+            {t.flow.steps.map((step, index) => (
+              <span className="flow-step" key={step}>
+                <span className="flow-step__number">{index + 1}</span>
+                <span className="flow-step__label">{step}</span>
+                {index < t.flow.steps.length - 1 && (
+                  <ArrowRight size={16} className="flow-step__arrow" aria-hidden="true" />
+                )}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* Starter Wizard */}
+        <StarterWizard language={language} showToast={showToast} />
+
+        {/* Quality Bar */}
+        <section className="section" data-testid="quality-section">
+          <div className="section__header">
+            <p className="eyebrow">Quality</p>
+            <h2>{t.quality.title}</h2>
+            <p>{t.quality.intro}</p>
+          </div>
+          <div className="grid grid--three">
+            <Card
+              description={t.quality.body}
+              icon={<ShieldCheck size={24} />}
+              title={t.quality.title}
+              tone="teal"
+            >
+              <div className="card__actions">
+                <Button
+                  icon={<ExternalLink size={16} />}
+                  onClick={() => window.open("docs/QUALITY_BAR.md", "_blank")}
+                  variant="secondary"
+                >
+                  {t.quality.link}
+                </Button>
+              </div>
+            </Card>
+            <Card
+              description={language === "zh"
+                ? "self-test 在浏览器和命令行中检查关键能力，确保模板基础功能正常。"
+                : "self-test checks critical capabilities in browser and CLI, ensuring template fundamentals work."}
+              icon={<CheckCircle2 size={24} />}
+              title="self-test"
+              tone="blue"
             />
-            <Button icon={<Upload size={17} />} onClick={() => importInputRef.current?.click()}>{t.importJson}</Button>
-            <Button icon={<Download size={17} />} onClick={exportJson}>{t.exportJson}</Button>
-            <Button icon={<FileJson size={17} />} onClick={() => setClips(sortClips(sampleClips))}>{t.loadSample}</Button>
-            <Button icon={<Trash2 size={17} />} onClick={clearAll} variant="danger">{t.clearAll}</Button>
+            <Card
+              description={language === "zh"
+                ? "preflight 在发布前检查文档、配置、敏感信息和范围边界，防止低级错误上线。"
+                : "preflight checks docs, config, sensitive content, and scope boundaries before release to prevent low-level errors."}
+              icon={<ShieldCheck size={24} />}
+              title="preflight"
+              tone="amber"
+            />
           </div>
+        </section>
+
+        {/* Starter Resources */}
+        <section className="section" data-testid="resources-section" id="docs">
+          <div className="section__header">
+            <p className="eyebrow">Documentation</p>
+            <h2>{t.resources.title}</h2>
+            <p>{t.resources.intro}</p>
+          </div>
+          <div className="grid grid--three">
+            {t.resources.items.map((item, index) => (
+              <Card
+                description={item.body}
+                icon={<BookOpen size={24} />}
+                key={item.title}
+                title={item.title}
+                tone={capabilityTones[index % capabilityTones.length]}
+              >
+                <div className="card__actions">
+                  <CopyButton
+                    copiedLabel={t.common.copied}
+                    label={t.matrix.copyPath}
+                    onCopied={() => showToast(t.toast.copied)}
+                    onError={() => showToast(t.toast.copyFailed, "danger")}
+                    text={item.path}
+                  />
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Settings */}
+        <section className="section settings" data-testid="settings-section" id="settings">
+          <div>
+            <p className="eyebrow">Settings</p>
+            <h2>{t.settings.title}</h2>
+            <p>{t.settings.intro}</p>
+            <span className={storageReady ? "status-pill status-pill--ok" : "status-pill status-pill--warn"}>
+              {storageReady ? t.settings.storageReady : t.settings.storageBlocked}
+            </span>
+          </div>
+          <div className="settings__controls">
+            <div className="control-row">
+              <span>{t.settings.theme}</span>
+              <Button
+                data-testid="settings-theme-toggle"
+                icon={theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+                onClick={toggleTheme}
+                variant="secondary"
+              >
+                {theme === "dark" ? t.settings.themeLight : t.settings.themeDark}
+              </Button>
+            </div>
+            <div className="control-row">
+              <span>{t.settings.language}</span>
+              <Button
+                data-testid="settings-language-toggle"
+                icon={<Languages size={17} />}
+                onClick={toggleLanguage}
+                variant="secondary"
+              >
+                {language === "zh" ? t.settings.en : t.settings.zh}
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Template Health */}
+        <section className="section" data-testid="template-health">
+          <div className="section__header">
+            <p className="eyebrow">Foundation</p>
+            <h2>{t.health.title}</h2>
+            <p>{t.health.intro}</p>
+          </div>
+          <div className="health-grid">
+            {t.health.items.map((item) => (
+              <div className="health-item" data-health-key={item.key} key={item.key}>
+                <span className="health-item__status">
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                </span>
+                <span className="health-item__label">{item.label}</span>
+                <span className="health-item__state">{t.health.ready}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Reusable States Demo */}
+        <section className="section state-grid" aria-label="Reusable states">
+          <EmptyState body={t.states.emptyBody} title={t.states.emptyTitle} />
+          <ErrorState body={t.states.errorBody} title={t.states.errorTitle} />
         </section>
       </main>
 
-      <footer className="app-footer">
+      {/* Footer */}
+      <footer className="app-footer" data-testid="app-footer">
         <span className="app-footer__version">v{siteMeta.version}</span>
-        <span className="app-footer__tag">{t.localOnly}</span>
-        <span className="app-footer__tag">{t.noBackend}</span>
+        <span className="app-footer__tag">Local First</span>
+        <span className="app-footer__tag">No Backend</span>
         <span className="app-footer__tag">GitHub Pages Ready</span>
       </footer>
 
-      <Modal closeLabel="Close" isOpen={Boolean(editing)} onClose={() => setEditing(null)} title={editing?.title ?? t.details}>
-        {editing ? (
-          <div className="edit-form">
-            <label className="field">
-              <span>Title</span>
-              <input value={editing.title} onChange={(event) => setEditing({ ...editing, title: event.target.value })} />
-            </label>
-            <label className="field">
-              <span>{t.type}</span>
-              <select value={editing.type} onChange={(event) => setEditing({ ...editing, type: event.target.value as ClipType })}>
-                {CLIP_TYPES.map((type) => <option key={type}>{type}</option>)}
-              </select>
-            </label>
-            <label className="field">
-              <span>Content</span>
-              <textarea value={editContent} onChange={(event) => setEditContent(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>{t.tags}</span>
-              <input value={editTags} onChange={(event) => setEditTags(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>Note</span>
-              <input value={editing.note} onChange={(event) => setEditing({ ...editing, note: event.target.value })} />
-            </label>
-            <div className="edit-flags">
-              <label className="check"><input checked={editing.sensitive} onChange={(event) => setEditing({ ...editing, sensitive: event.target.checked })} type="checkbox" />{t.sensitive}</label>
-              <label className="check"><input checked={editing.pinned} onChange={(event) => setEditing({ ...editing, pinned: event.target.checked })} type="checkbox" />{t.pin}</label>
-              <label className="check"><input checked={editing.favorite} onChange={(event) => setEditing({ ...editing, favorite: event.target.checked })} type="checkbox" />{t.favorite}</label>
-            </div>
-            {editing.sensitive && !editing.encrypted ? <p className="legacy-note">Legacy sensitive item: re-save while vault is unlocked to enable encryption.</p> : null}
-            <div className="modal__actions">
-              <Button icon={<ShieldCheck size={17} />} onClick={() => void saveEdit()} variant="primary">{t.saveContent}</Button>
-              <Button onClick={() => setEditing(null)}>Close</Button>
-            </div>
-          </div>
-        ) : null}
+      {/* Matrix Modal */}
+      <Modal
+        closeLabel={t.common.close}
+        isOpen={isMatrixOpen}
+        onClose={() => setIsMatrixOpen(false)}
+        title={t.matrix.modalTitle}
+      >
+        <p>{t.matrix.modalBody}</p>
+        <div className="matrix-modal-list">
+          {MODULE_REGISTRY.map((module) => {
+            const status = getStatusForLevel(module, selectedLevel);
+            return (
+              <div className="matrix-modal-list__item" key={module.id}>
+                <span>{module.name[language]}</span>
+                <span className={`status status--${status}`}>
+                  {STATUS_LABELS[status][language]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="modal__actions">
+          <CopyButton
+            copiedLabel={t.common.copied}
+            label={t.matrix.copyPath}
+            onCopied={() => showToast(t.toast.copied)}
+            onError={() => showToast(t.toast.copyFailed, "danger")}
+            text="docs/MODULE_MATRIX.md"
+          />
+          <DownloadButton
+            content={manifest}
+            fileName={`${siteMeta.name}-manifest.json`}
+            label={t.hero.downloadManifest}
+            onDownloaded={() => showToast(t.toast.downloaded)}
+          />
+        </div>
       </Modal>
 
       <Toast message={toast} onDismiss={() => setToast(null)} />
